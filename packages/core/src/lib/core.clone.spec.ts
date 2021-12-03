@@ -1,9 +1,9 @@
-import * as fs from 'fs/promises';
+import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { clone } from './core';
 
-describe('core', () => {
+describe('core.clone', () => {
   it('should clone existing repository', async () => {
     const baseDir = await os.tmpdir();
     const actual = await clone(
@@ -12,7 +12,7 @@ describe('core', () => {
     );
 
     expect(actual).toEqual(path.join(baseDir, 'giticket'));
-    const actualGit = await fs.stat(path.join(actual, '.git'));
+    const actualGit = await fs.promises.stat(path.join(actual, '.git'));
     expect(actualGit.isDirectory()).toBeTruthy();
   });
 });

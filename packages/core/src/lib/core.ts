@@ -11,3 +11,9 @@ export async function clone(
   await git.clone({ fs, http, dir, url });
   return dir;
 }
+
+export async function listCommits(
+  repository: string
+): Promise<git.ReadCommitResult[]> {
+  return git.log({ fs, dir: repository });
+}
