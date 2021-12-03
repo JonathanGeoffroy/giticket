@@ -1,3 +1,13 @@
-export function core(): string {
-  return 'core';
+import * as git from 'isomorphic-git';
+import * as fs from 'fs';
+import * as http from 'isomorphic-git/http/node';
+import path = require('path');
+
+export async function clone(
+  url: string,
+  baseDirectory: string
+): Promise<string> {
+  const dir = path.join(baseDirectory, url.split('/').slice(-1)[0]);
+  await git.clone({ fs, http, dir, url });
+  return dir;
 }
