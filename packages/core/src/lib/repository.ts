@@ -2,6 +2,13 @@ import * as git from 'isomorphic-git';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'isomorphic-git/http/node';
+import NoMoreItemError from './errors/noMoreItemError';
+
+export interface CommitPage {
+  hasNext: boolean;
+  next: () => Promise<CommitPage>;
+  results: git.ReadCommitResult[];
+}
 
 export default class Repository {
   constructor(
@@ -10,14 +17,38 @@ export default class Repository {
     private readonly http: git.HttpClient
   ) {}
 
-  listCommits(): Promise<git.ReadCommitResult[]> {
-    return git.log({ fs: this.fs, dir: this.dir }).catch((err) => {
-      if (err.code === 'NotFoundError') {
-        // No commit on branch
-        return [];
-      }
-      throw err;
+  async listCommits(
+    params: {
+      ref?: string;
+      depth?: number;
+    } = {}
+  ): Promise<CommitPage> {
+    const { ref, depth } = { ...params };
+
+    const results = await git.log({
+      fs: this.fs,
+      dir: this.dir,
+      ref,
+      depth,
     });
+
+    const hasNext =
+      results.length && results.slice(-1)[0].commit.parent.length > 0;
+
+    return {
+      results,
+      hasNext,
+      next: async () => {
+        if (!hasNext) {
+          throw new NoMoreItemError();
+        }
+
+        return this.listCommits({
+          ...params,
+          ref: results.slice(-1)[0].commit.parent[0],
+        });
+      },
+    };
   }
 
   static async clone(url: string, baseDirectory: string): Promise<Repository> {
