@@ -154,7 +154,7 @@ export default class Repository {
       if (e.code === 'NotFoundError')
         return {
           hasNext: false,
-          next: () => {
+          next: async () => {
             throw new NoMoreItemError();
           },
           results: [],

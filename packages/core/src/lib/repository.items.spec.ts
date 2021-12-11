@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import NoMoreItemError from './errors/noMoreItemError';
+import { AddItem } from './models/item';
 import Repository from './repository';
 
 describe('items', () => {
@@ -19,10 +20,10 @@ describe('items', () => {
   });
 
   it('should list empty list of items', async () => {
-    expect(repo.listItems({})).resolves.toMatchObject({
-      hasNext: false,
-      results: [],
-    });
+    const actual = await repo.listItems({});
+    expect(actual.results).toEqual([]);
+    expect(actual.hasNext).toBeFalsy();
+    expect(actual.next()).rejects.toBeInstanceOf(NoMoreItemError);
   });
 
   it('should add items', async () => {
@@ -43,25 +44,28 @@ describe('items', () => {
     };
 
     await repo.addItem(first);
-    let itemList = await repo.listItems({});
-    expect(itemList.results).toMatchObject([first]);
-    expect(itemList.results[0].id).not.toBeNull();
+
+    checkList([first]);
 
     await repo.addItem(second);
-    itemList = await repo.listItems({});
-    expect(itemList.results).toMatchObject([second, first]);
-    expect(itemList.results[0].id).not.toBeNull();
-    expect(itemList.results[1].id).not.toBeNull();
+    checkList([second, first]);
 
     await repo.addItem(third);
-    itemList = await repo.listItems({});
-    expect(itemList.results).toMatchObject([third, second, first]);
-    expect(itemList.results[0].id).not.toBeNull();
-    expect(itemList.results[1].id).not.toBeNull();
-    expect(itemList.results[2].id).not.toBeNull();
+    checkList([third, second, first]);
 
     // Check we don't pollute current branch
     expect(repo.listCommits()).rejects.toMatchObject({ code: 'NotFoundError' });
+
+    async function checkList(expected: AddItem[]) {
+      const itemList = await repo.listItems({});
+      expect(itemList.results).toMatchObject(expected);
+      for (const item of itemList.results) {
+        expect(item.id).not.toBeNull();
+      }
+
+      expect(itemList.hasNext).toBeFalsy();
+      expect(itemList.next()).rejects.toBeInstanceOf(NoMoreItemError);
+    }
   });
 
   it('should handle pagination', async () => {
