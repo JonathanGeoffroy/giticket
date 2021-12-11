@@ -18,11 +18,14 @@ export type CommitPage = Page<git.ReadCommitResult>;
 export type ItemPage = Page<Item>;
 
 export default class Repository {
+  options: { dir: string; fs: git.FsClient; http: git.HttpClient };
   constructor(
     readonly dir: string,
     private readonly fs: git.FsClient = fs,
     private readonly http: git.HttpClient
-  ) {}
+  ) {
+    this.options = { dir, fs, http };
+  }
 
   async listCommits(
     params: {
@@ -33,8 +36,7 @@ export default class Repository {
     const { ref, depth } = { ...params };
 
     const results = await git.log({
-      fs: this.fs,
-      dir: this.dir,
+      ...this.options,
       ref,
       depth,
     });
@@ -65,12 +67,12 @@ export default class Repository {
     };
 
     const itemTree = await this.createTreeItem(item);
-    const options = { fs: this.fs, dir: this.dir, ref: 'refs/giticket/main' };
+    const options = { ...this.options, ref: 'refs/giticket/main' };
     const head = await git.resolveRef(options).catch(() => null);
 
     const oldTree = head
       ? await (
-          await git.readTree({ fs: this.fs, dir: this.dir, oid: head })
+          await git.readTree({ ...this.options, oid: head })
         ).tree
       : [];
 
@@ -89,14 +91,12 @@ export default class Repository {
     parent: string | null;
   }): Promise<void> {
     const tree = await git.writeTree({
-      fs: this.fs,
-      dir: this.dir,
+      ...this.options,
       tree: content,
     });
 
     const oid = await git.commit({
-      dir: this.dir,
-      fs: this.fs,
+      ...this.options,
       tree: tree,
       parent: parent ? [parent] : undefined,
       message: 'giticket auto-generated',
@@ -107,8 +107,7 @@ export default class Repository {
     });
 
     await git.writeRef({
-      fs: this.fs,
-      dir: this.dir,
+      ...this.options,
       ref: 'refs/giticket/main',
       value: oid,
       force: true,
@@ -116,12 +115,11 @@ export default class Repository {
   }
 
   async editItem(item: Item): Promise<Item> {
-    const options = { fs: this.fs, dir: this.dir, ref: 'refs/giticket/main' };
+    const options = { ...this.options, ref: 'refs/giticket/main' };
     const head = await git.resolveRef(options);
 
     const { tree: oldTree } = await git.readTree({
-      fs: this.fs,
-      dir: this.dir,
+      ...this.options,
       oid: head,
     });
 
@@ -190,25 +188,22 @@ export default class Repository {
   }
 
   private async readBlobItem(oid: string): Promise<Item> {
-    const { blob } = await git.readBlob({ fs: this.fs, dir: this.dir, oid });
+    const { blob } = await git.readBlob({ ...this.options, oid });
     return JSON.parse(new TextDecoder().decode(blob)) as Item;
   }
 
   private async computeTree(): Promise<git.TreeEntry[]> {
     const giticketRef = await git.resolveRef({
-      fs: this.fs,
-      dir: this.dir,
+      ...this.options,
       ref: 'refs/giticket/main',
     });
 
     const { commit } = await git.readCommit({
-      fs: this.fs,
-      dir: this.dir,
+      ...this.options,
       oid: giticketRef,
     });
     const { tree } = await git.readTree({
-      fs: this.fs,
-      dir: this.dir,
+      ...this.options,
       oid: commit.tree,
     });
 
@@ -227,8 +222,7 @@ export default class Repository {
 
   private async createTreeItem(item: Item): Promise<git.TreeEntry> {
     const oid = await git.writeBlob({
-      dir: this.dir,
-      fs: this.fs,
+      ...this.options,
       blob: new Uint8Array(new TextEncoder().encode(JSON.stringify(item))),
     });
 
