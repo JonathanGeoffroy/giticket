@@ -1,23 +1,16 @@
-import * as fs from 'fs';
-import * as os from 'os';
-import * as path from 'path';
 import NoMoreItemError from './errors/noMoreItemError';
 import { AddItem } from './models/item';
 import Repository from './repository';
+import { initRepository, cleanupRepository } from '../testing/helpers';
 
 describe('items', () => {
   let repo: Repository;
 
   beforeEach(async () => {
-    const baseDir = await os.tmpdir();
-    repo = await Repository.init(path.join(baseDir, 'giticket-test'));
+    repo = await initRepository();
   });
 
-  afterEach(async () => {
-    return fs.promises.rm(repo.dir, {
-      recursive: true,
-    });
-  });
+  afterEach(() => cleanupRepository(repo));
 
   it('should list empty list of items', async () => {
     const actual = await repo.listItems({});

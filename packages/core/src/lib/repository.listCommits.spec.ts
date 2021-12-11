@@ -1,11 +1,19 @@
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import * as git from 'isomorphic-git';
 import Repository from './repository';
 import NoMoreItemError from './errors/noMoreItemError';
+import { cleanupRepository, initRepository } from '../testing/helpers';
 
 describe('listCommits', () => {
+  let repo: Repository;
+
+  beforeEach(async () => {
+    repo = await initRepository();
+  });
+
+  afterEach(() => cleanupRepository(repo));
+
   async function commitSomethingNew(line: string, commit: string) {
     await fs.promises.writeFile(path.join(repo.dir, 'README.md'), line, {
       flag: 'a',
@@ -18,19 +26,6 @@ describe('listCommits', () => {
       author: { email: 'test@giticket.com', name: 'test' },
     });
   }
-
-  let repo: Repository;
-
-  beforeEach(async () => {
-    const baseDir = await os.tmpdir();
-    repo = await Repository.init(path.join(baseDir, 'giticket-test'));
-  });
-
-  afterEach(async () => {
-    return fs.promises.rm(repo.dir, {
-      recursive: true,
-    });
-  });
 
   // FIXME is this really what we want ?
   it('should throw NotFoundError for empty repository', async () => {
