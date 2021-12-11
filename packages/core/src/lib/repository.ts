@@ -5,6 +5,7 @@ import * as http from 'isomorphic-git/http/node';
 import NoMoreItemError from './errors/noMoreItemError';
 import Item, { AddItem } from './models/item';
 import { v4 as uuid } from 'uuid';
+import { TextDecoder, TextEncoder } from 'util';
 
 export interface Page<P> {
   hasNext: boolean;
@@ -74,17 +75,29 @@ export default class Repository {
 
     const newTree = [itemTree, ...oldTree];
 
+    await this.commitItems({ content: newTree, parent: head });
+
+    return item;
+  }
+
+  private async commitItems({
+    content,
+    parent,
+  }: {
+    content: git.TreeEntry[];
+    parent: string | null;
+  }): Promise<void> {
     const tree = await git.writeTree({
       fs: this.fs,
       dir: this.dir,
-      tree: newTree,
+      tree: content,
     });
 
     const oid = await git.commit({
       dir: this.dir,
       fs: this.fs,
       tree: tree,
-      parent: head ? [head] : undefined,
+      parent: parent ? [parent] : undefined,
       message: 'giticket auto-generated',
       author: {
         name: 'giticket',
@@ -92,7 +105,34 @@ export default class Repository {
       ref: 'refs/giticket/main',
     });
 
-    await git.writeRef({ ...options, value: oid, force: true });
+    await git.writeRef({
+      fs: this.fs,
+      dir: this.dir,
+      ref: 'refs/giticket/main',
+      value: oid,
+      force: true,
+    });
+  }
+
+  async editItem(item: Item): Promise<Item> {
+    const options = { fs: this.fs, dir: this.dir, ref: 'refs/giticket/main' };
+    const head = await git.resolveRef(options);
+
+    const { tree: oldTree } = await git.readTree({
+      fs: this.fs,
+      dir: this.dir,
+      oid: head,
+    });
+
+    const itemOid = await this.findOid(item.id);
+    const newTree = [
+      await this.createTreeItem(item),
+      ...oldTree.filter(({ oid }) => {
+        return oid !== itemOid;
+      }),
+    ];
+
+    await this.commitItems({ content: newTree, parent: head });
 
     return item;
   }
@@ -105,22 +145,7 @@ export default class Repository {
     limit?: number;
   }): Promise<ItemPage> {
     try {
-      const giticketRef = await git.resolveRef({
-        fs: this.fs,
-        dir: this.dir,
-        ref: 'refs/giticket/main',
-      });
-      const { commit } = await git.readCommit({
-        fs: this.fs,
-        dir: this.dir,
-        oid: giticketRef,
-      });
-      const { tree } = await git.readTree({
-        fs: this.fs,
-        dir: this.dir,
-        oid: commit.tree,
-      });
-
+      const tree = await this.computeTree();
       let items = tree.reverse();
       let after;
 
@@ -166,6 +191,37 @@ export default class Repository {
   private async readBlobItem(oid: string): Promise<Item> {
     const { blob } = await git.readBlob({ fs: this.fs, dir: this.dir, oid });
     return JSON.parse(new TextDecoder().decode(blob)) as Item;
+  }
+
+  private async computeTree(): Promise<git.TreeEntry[]> {
+    const giticketRef = await git.resolveRef({
+      fs: this.fs,
+      dir: this.dir,
+      ref: 'refs/giticket/main',
+    });
+
+    const { commit } = await git.readCommit({
+      fs: this.fs,
+      dir: this.dir,
+      oid: giticketRef,
+    });
+    const { tree } = await git.readTree({
+      fs: this.fs,
+      dir: this.dir,
+      oid: commit.tree,
+    });
+
+    return tree;
+  }
+
+  private async findOid(id: string): Promise<string> {
+    const tree = await this.computeTree();
+    const entry = tree.find((entry) => entry.path.split('_')[1] === id);
+    if (!entry) {
+      throw new git.Errors.NotFoundError(id);
+    }
+
+    return entry.oid;
   }
 
   private async createTreeItem(item: Item): Promise<git.TreeEntry> {
