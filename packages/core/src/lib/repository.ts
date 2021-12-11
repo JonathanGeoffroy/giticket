@@ -6,6 +6,7 @@ import NoMoreItemError from './errors/noMoreItemError';
 import Item, { AddItem } from './models/item';
 import { v4 as uuid } from 'uuid';
 import { TextDecoder, TextEncoder } from 'util';
+import { generate, parse } from './models/path';
 
 export interface Page<P> {
   hasNext: boolean;
@@ -216,7 +217,7 @@ export default class Repository {
 
   private async findOid(id: string): Promise<string> {
     const tree = await this.computeTree();
-    const entry = tree.find((entry) => entry.path.split('_')[1] === id);
+    const entry = tree.find((entry) => parse(entry.path).uuid === id);
     if (!entry) {
       throw new git.Errors.NotFoundError(id);
     }
@@ -234,7 +235,7 @@ export default class Repository {
     return {
       mode: '100644',
       oid,
-      path: `${Date.now()}_${item.id}`,
+      path: generate(item.id),
       type: 'blob',
     };
   }
