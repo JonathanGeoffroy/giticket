@@ -1,13 +1,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import Repository from './repository';
+import Giticket from '../index';
 import { randomTmpDir } from '../testing/helpers';
 
 describe('core.clone', () => {
   it('should clone existing repository', async () => {
     const baseDir = await randomTmpDir();
     try {
-      const repo = await Repository.clone(
+      const repo = await Giticket.clone(
         'https://github.com/JonathanGeoffroy/giticket',
         baseDir
       );

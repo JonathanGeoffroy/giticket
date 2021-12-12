@@ -1,12 +1,12 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as git from 'isomorphic-git';
-import Repository from './repository';
+import Giticket from '../index';
 import NoMoreItemError from './errors/noMoreItemError';
 import { cleanupRepository, initRepository } from '../testing/helpers';
 
 describe('listCommits', () => {
-  let repo: Repository;
+  let repo: Giticket;
 
   beforeEach(async () => {
     repo = await initRepository();

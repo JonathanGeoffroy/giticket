@@ -1,6 +1,6 @@
 import NoMoreItemError from './errors/noMoreItemError';
 import { AddItem } from './models/item';
-import Repository from './repository';
+import Giticket from '../index';
 import { initRepository, cleanupRepository } from '../testing/helpers';
 import * as git from 'isomorphic-git';
 
@@ -21,7 +21,7 @@ const third: AddItem = {
 };
 
 describe('items', () => {
-  let repo: Repository;
+  let repo: Giticket;
 
   beforeEach(async () => {
     repo = await initRepository();

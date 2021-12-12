@@ -2,7 +2,7 @@ import * as os from 'os';
 import * as path from 'path';
 import { promises as fs } from 'fs';
 import { v4 as uuid } from 'uuid';
-import Repository from '../';
+import Repository from '../index';
 
 export async function randomTmpDir() {
   const baseDir = await os.tmpdir();
