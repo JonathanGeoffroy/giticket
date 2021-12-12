@@ -22,7 +22,7 @@ export default function <TBase extends Gitable>(Base: TBase) {
         ...itemToAdd,
       };
 
-      const itemTree = await this._createTreeItem(item);
+      const itemTree = await this.createTreeItem(item);
       const options = { ref: GITICKET_DEFAULT_HEAD };
       const head = await this.resolveRef(options).catch(() => null);
 
@@ -34,35 +34,9 @@ export default function <TBase extends Gitable>(Base: TBase) {
 
       const newTree = [itemTree, ...oldTree];
 
-      await this._commitItems({ content: newTree, parent: head });
+      await this.commitItems({ content: newTree, parent: head });
 
       return item;
-    }
-
-    async _commitItems({
-      content,
-      parent,
-    }: {
-      content: git.TreeEntry[];
-      parent: string | null;
-    }): Promise<void> {
-      const tree = await this.writeTree(content);
-
-      const oid = await this.commit({
-        tree,
-        parent: parent ? [parent] : undefined,
-        message: 'giticket auto-generated',
-        author: {
-          name: 'giticket',
-        },
-        ref: GITICKET_DEFAULT_HEAD,
-      });
-
-      await this.writeRef({
-        ref: GITICKET_DEFAULT_HEAD,
-        value: oid,
-        force: true,
-      });
     }
 
     async editItem(item: Item): Promise<Item> {
@@ -73,15 +47,15 @@ export default function <TBase extends Gitable>(Base: TBase) {
         oid: head,
       });
 
-      const itemOid = await this._findOid(item.id);
+      const itemOid = await this.findOid(item.id);
       const newTree = [
-        await this._createTreeItem(item),
+        await this.createTreeItem(item),
         ...oldTree.filter(({ oid }) => {
           return oid !== itemOid;
         }),
       ];
 
-      await this._commitItems({ content: newTree, parent: head });
+      await this.commitItems({ content: newTree, parent: head });
 
       return item;
     }
@@ -94,7 +68,7 @@ export default function <TBase extends Gitable>(Base: TBase) {
       limit?: number;
     }): Promise<ItemPage> {
       try {
-        const tree = await this._computeTree();
+        const tree = await this.computeTree();
         let items = tree.reverse();
         let after;
 
@@ -108,7 +82,7 @@ export default function <TBase extends Gitable>(Base: TBase) {
         }
 
         const results = await Promise.all(
-          items.map(({ oid }) => this._readBlobItem(oid))
+          items.map(({ oid }) => this.readBlobItem(oid))
         );
         return {
           results,
@@ -137,13 +111,39 @@ export default function <TBase extends Gitable>(Base: TBase) {
       }
     }
 
-    async _readBlobItem(oid: string): Promise<Item> {
+    private async commitItems({
+      content,
+      parent,
+    }: {
+      content: git.TreeEntry[];
+      parent: string | null;
+    }): Promise<void> {
+      const tree = await this.writeTree(content);
+
+      const oid = await this.commit({
+        tree,
+        parent: parent ? [parent] : undefined,
+        message: 'giticket auto-generated',
+        author: {
+          name: 'giticket',
+        },
+        ref: GITICKET_DEFAULT_HEAD,
+      });
+
+      await this.writeRef({
+        ref: GITICKET_DEFAULT_HEAD,
+        value: oid,
+        force: true,
+      });
+    }
+
+    private async readBlobItem(oid: string): Promise<Item> {
       const { blob } = await this.readBlob({ oid });
       return JSON.parse(new TextDecoder().decode(blob)) as Item;
     }
 
-    async _findOid(id: string): Promise<string> {
-      const tree = await this._computeTree();
+    private async findOid(id: string): Promise<string> {
+      const tree = await this.computeTree();
       const entry = tree.find((entry) => parse(entry.path).uuid === id);
       if (!entry) {
         throw new git.Errors.NotFoundError(id);
@@ -152,7 +152,7 @@ export default function <TBase extends Gitable>(Base: TBase) {
       return entry.oid;
     }
 
-    async _computeTree(): Promise<git.TreeEntry[]> {
+    private async computeTree(): Promise<git.TreeEntry[]> {
       const giticketRef = await this.resolveRef({
         ref: GITICKET_DEFAULT_HEAD,
       });
@@ -167,7 +167,7 @@ export default function <TBase extends Gitable>(Base: TBase) {
       return tree;
     }
 
-    async _createTreeItem(item: Item): Promise<git.TreeEntry> {
+    private async createTreeItem(item: Item): Promise<git.TreeEntry> {
       const oid = await this.writeBlob(
         new Uint8Array(new TextEncoder().encode(JSON.stringify(item)))
       );
