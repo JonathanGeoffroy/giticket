@@ -1,9 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as git from 'isomorphic-git';
-import Giticket from '../index';
-import NoMoreItemError from './errors/noMoreItemError';
-import { cleanupRepository, initRepository } from '../testing/helpers';
+import Giticket, { NoMoreItemError } from '../src';
+import { cleanupRepository, initRepository } from './utils';
 
 describe('listCommits', () => {
   let repo: Giticket;

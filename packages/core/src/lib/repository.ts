@@ -46,14 +46,14 @@ export default class Repository {
   protected async readBlob(options: {
     oid: string;
     filepath?: string;
-    cache?: any;// eslint-disable-line @typescript-eslint/no-explicit-any
+    cache?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   }): Promise<git.ReadBlobResult> {
     return git.readBlob({ ...this.options, ...options });
   }
 
   protected async readCommit(options: {
     oid: string;
-    cache?: any;// eslint-disable-line @typescript-eslint/no-explicit-any
+    cache?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   }): Promise<git.ReadCommitResult> {
     return git.readCommit({ ...this.options, ...options });
   }
@@ -62,7 +62,7 @@ export default class Repository {
     oid: string;
     ref?: string;
     filepath?: string;
-    cache?: any;// eslint-disable-line @typescript-eslint/no-explicit-any
+    cache?: any; // eslint-disable-line @typescript-eslint/no-explicit-any
   }): Promise<git.ReadTreeResult> {
     return git.readTree({ ...this.options, ...options });
   }

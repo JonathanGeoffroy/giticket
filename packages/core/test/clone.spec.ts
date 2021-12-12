@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import Giticket from '../index';
-import { randomTmpDir } from '../testing/helpers';
+import Giticket from '../src';
+import { randomTmpDir } from './utils';
 
 describe('core.clone', () => {
   it('should clone existing repository', async () => {

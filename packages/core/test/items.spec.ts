@@ -1,7 +1,5 @@
-import NoMoreItemError from './errors/noMoreItemError';
-import { AddItem } from './models/item';
-import Giticket from '../index';
-import { initRepository, cleanupRepository } from '../testing/helpers';
+import Giticket, { AddItem, NoMoreItemError } from '../src';
+import { initRepository, cleanupRepository } from './utils';
 import * as git from 'isomorphic-git';
 
 const first: AddItem = {
