@@ -7,6 +7,7 @@ import { generate, parse } from './models/path';
 import { Page } from './models/page';
 import Repository from './repository';
 import Constructor from './mixin';
+import { Matcher } from './query';
 
 const GITICKET_DEFAULT_HEAD = 'refs/giticket/main';
 
@@ -109,6 +110,11 @@ export default function <TBase extends Gitable>(Base: TBase) {
           };
         throw e;
       }
+    }
+
+    async searchItems(query: Matcher<Item>): Promise<Item[]> {
+      const items = await this.listItems({});
+      return items.results.filter(query);
     }
 
     private async commitItems({

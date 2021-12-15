@@ -11,6 +11,8 @@ import Item, { AddItem } from './lib/models/item';
 import NoMoreItemError from './lib/errors/noMoreItemError';
 export { Item, AddItem, NoMoreItemError };
 
+export { item } from './lib/query';
+
 export default class Giticket extends CommitManager(ItemManager(Repository)) {
   static async clone(url: string, baseDirectory: string): Promise<Repository> {
     const dir = path.join(baseDirectory, url.split('/').slice(-1)[0]);
