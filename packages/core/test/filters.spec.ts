@@ -39,16 +39,34 @@ describe('filters', () => {
     ).resolves.toMatchObject([third]);
   });
 
+  it('should find field *not* containing exact pattern', async () => {
+    return expect(
+      repo.searchItems(item('title').not.contains('Third'))
+    ).resolves.toMatchObject([second, first]);
+  });
+
   it('should filter by title containing starting match', async () => {
     return expect(
       repo.searchItems(item('description').contains('Third'))
     ).resolves.toMatchObject([third]);
   });
 
-  it('should filter by title containing  matching pattern', async () => {
+  it('should filter by title *not* containing starting match', async () => {
+    return expect(
+      repo.searchItems(item('description').not.contains('Third'))
+    ).resolves.toMatchObject([second, first]);
+  });
+
+  it('should filter by title containing matching pattern', async () => {
     return expect(
       repo.searchItems(item('description').contains('description'))
     ).resolves.toMatchObject([third, second]);
+  });
+
+  it('should filter by title *not* containing matching pattern', async () => {
+    return expect(
+      repo.searchItems(item('description').not.contains('description'))
+    ).resolves.toMatchObject([first]);
   });
 
   it('should filter by equality', async () => {
@@ -60,7 +78,9 @@ describe('filters', () => {
       second,
       first,
     ]);
+  });
 
+  it('should filter by difference', async () => {
     expect(
       repo.searchItems(item('kind').not.eq('feature'))
     ).resolves.toMatchObject([second, first]);
@@ -68,5 +88,13 @@ describe('filters', () => {
     expect(
       repo.searchItems(item('kind').not.eq('issue'))
     ).resolves.toMatchObject([third]);
+
+    expect(
+      repo.searchItems(item('kind').not.eq('feature'))
+    ).resolves.toMatchObject([third]);
+
+    expect(
+      repo.searchItems(item('kind').not.eq('issue'))
+    ).resolves.toMatchObject([second, first]);
   });
 });
