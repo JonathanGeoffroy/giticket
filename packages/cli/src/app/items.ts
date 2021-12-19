@@ -4,17 +4,9 @@ import * as chalk from 'chalk';
 import { log } from 'loglevel';
 import * as fs from 'fs';
 import * as http from 'isomorphic-git/http/node';
+import { strictlyPositiveNumber } from './checker';
 
 export default function handleItemCommands(): Command {
-  function strictlyPositiveNumber(value) {
-    // parseInt takes a string and a radix
-    const parsedValue = parseInt(value, 10);
-    if (isNaN(parsedValue) || parsedValue <= 0) {
-      throw new InvalidArgumentError('Strictly positive number expected');
-    }
-    return parsedValue;
-  }
-
   const itemCommand = new Command('item');
   itemCommand
     .command('list [gitDir]')
