@@ -15,9 +15,9 @@ export default function handleItemCommands(): Command {
       'Size of the pagination',
       strictlyPositiveNumber
     )
-    .action(async (gitDir = './', { ref, size }) => {
+    .action(async (gitDir = './', { size }) => {
       const git = new Giticket(gitDir, fs, http);
-      const items = await git.listItems({ ref, limit: size });
+      const items = await git.listItems({ limit: size });
       items.results.map(format).forEach((str) => log(str));
     });
 
