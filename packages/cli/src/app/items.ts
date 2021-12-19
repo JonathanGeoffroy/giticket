@@ -1,15 +1,14 @@
 import Giticket, { Item } from '@giticket/core';
-import { Command, InvalidArgumentError } from 'commander';
+import { Command } from 'commander';
 import * as chalk from 'chalk';
 import { log } from 'loglevel';
 import * as fs from 'fs';
 import * as http from 'isomorphic-git/http/node';
 import { strictlyPositiveNumber } from './checker';
 
-export default function handleItemCommands(): Command {
-  const itemCommand = new Command('item');
-  itemCommand
-    .command('list [gitDir]')
+function listCommand(): Command {
+  return new Command('list')
+    .argument('[gitDir]')
     .option(
       '-s --size <size>',
       'Size of the pagination',
@@ -20,8 +19,10 @@ export default function handleItemCommands(): Command {
       const items = await git.listItems({ limit: size });
       items.results.map(format).forEach((str) => log(str));
     });
+}
 
-  return itemCommand;
+export default function handleItemCommands(): Command {
+  return new Command('item').addCommand(listCommand());
 }
 
 function format(item: Item): string {
