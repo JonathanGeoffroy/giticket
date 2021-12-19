@@ -5,7 +5,7 @@ import stringArgv from 'string-argv';
 import cli from '../src/app/cli';
 import chalk = require('chalk');
 
-describe('list items', () => {
+describe('item list', () => {
   let spyedLog: jest.SpyInstance;
   let git: Giticket;
 
@@ -26,7 +26,7 @@ describe('list items', () => {
   });
 
   it('should list empty list', () => {
-    cli.parse(stringArgv(`item list ${git.dir}`, 'node', 'testing'));
+    cli.parse(stringArgv(`item list -C ${git.dir}`, 'node', 'testing'));
     expect(spyedLog).not.toHaveBeenCalled();
   });
 
@@ -37,18 +37,20 @@ describe('list items', () => {
       title: 'test title',
     });
 
-    await cli.parseAsync(stringArgv(`item list ${git.dir}`, 'node', 'testing'));
+    await cli.parseAsync(
+      stringArgv(`item list -C ${git.dir}`, 'node', 'testing')
+    );
     expect(spyedLog).toHaveBeenCalledWith(
-      `${chalk.underline(item.id)}\u0009${chalk.italic(item.kind)}\u0009${
-        item.title
-      }`
+      stringify(item.id, item.title, item.kind)
     );
   });
 
   it('should list multiple items', async () => {
     const items: Item[] = await addItems(5);
 
-    await cli.parseAsync(stringArgv(`item list ${git.dir}`, 'node', 'testing'));
+    await cli.parseAsync(
+      stringArgv(`item list -C ${git.dir}`, 'node', 'testing')
+    );
 
     expect(spyedLog.mock.calls).toEqual([
       [stringify(items[4].id, 'test 4', 'test')],
@@ -63,7 +65,7 @@ describe('list items', () => {
     const items: Item[] = await addItems(5);
 
     await cli.parseAsync(
-      stringArgv(`item list ${git.dir} -s 3`, 'node', 'testing')
+      stringArgv(`item list -C ${git.dir} -s 3`, 'node', 'testing')
     );
 
     expect(spyedLog.mock.calls).toEqual([
@@ -76,21 +78,23 @@ describe('list items', () => {
   it('should handle limit negative size error', async () => {
     expect(
       cli.parseAsync(
-        stringArgv(`item list ${git.dir} -s -3`, 'node', 'testing')
+        stringArgv(`item list -C ${git.dir} -s -3`, 'node', 'testing')
       )
     ).rejects.toThrow('Strictly positive number expected');
   });
 
   it('should handle limit 0 size error', async () => {
     expect(
-      cli.parseAsync(stringArgv(`item list ${git.dir} -s 0`, 'node', 'testing'))
+      cli.parseAsync(
+        stringArgv(`item list -C ${git.dir} -s 0`, 'node', 'testing')
+      )
     ).rejects.toThrow('Strictly positive number expected');
   });
 
   it('should handle limit NaN size error', async () => {
     expect(
       cli.parseAsync(
-        stringArgv(`item list ${git.dir} -s seven`, 'node', 'testing')
+        stringArgv(`item list -C ${git.dir} -s seven`, 'node', 'testing')
       )
     ).rejects.toThrow('Strictly positive number expected');
   });
