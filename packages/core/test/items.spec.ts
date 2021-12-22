@@ -49,7 +49,7 @@ describe('items', () => {
     expect(repo.listCommits()).rejects.toMatchObject({ code: 'NotFoundError' });
   });
 
-  it('should edit items', async () => {
+  it('should edit all fields of an item', async () => {
     const firstAdded = await repo.addItem(first);
     const secondAdded = await repo.addItem(second);
     const thirdAdded = await repo.addItem(third);
@@ -62,6 +62,62 @@ describe('items', () => {
       status: 'closed',
     };
     await repo.editItem(firstEdited);
+    await checkList([firstEdited, thirdAdded, secondAdded]);
+  });
+
+  it('should edit only title of an item', async () => {
+    const firstAdded = await repo.addItem(first);
+    const secondAdded = await repo.addItem(second);
+    const thirdAdded = await repo.addItem(third);
+
+    await checkList([third, second, first]);
+
+    const firstEdited = await repo.editItem({
+      id: firstAdded.id,
+      title: 'Edited first',
+    });
+    expect(firstEdited).toEqual({
+      ...firstAdded,
+      title: 'Edited first',
+    });
+    await checkList([firstEdited, thirdAdded, secondAdded]);
+  });
+
+  it('should edit only description of an item', async () => {
+    const firstAdded = await repo.addItem(first);
+    const secondAdded = await repo.addItem(second);
+    const thirdAdded = await repo.addItem(third);
+
+    await checkList([third, second, first]);
+
+    const firstEdited = await repo.editItem({
+      id: firstAdded.id,
+      description: 'Edited description',
+    });
+
+    expect(firstEdited).toEqual({
+      ...firstAdded,
+      description: 'Edited description',
+    });
+    await checkList([firstEdited, thirdAdded, secondAdded]);
+  });
+
+  it('should edit only kind of an item', async () => {
+    const firstAdded = await repo.addItem(first);
+    const secondAdded = await repo.addItem(second);
+    const thirdAdded = await repo.addItem(third);
+
+    await checkList([third, second, first]);
+
+    const firstEdited = await repo.editItem({
+      id: firstAdded.id,
+      kind: 'Edited kind',
+    });
+
+    expect(firstEdited).toEqual({
+      ...firstAdded,
+      kind: 'Edited kind',
+    });
     await checkList([firstEdited, thirdAdded, secondAdded]);
   });
 

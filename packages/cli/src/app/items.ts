@@ -1,4 +1,4 @@
-import Giticket, { AddItem, Item } from '@giticket/core';
+import Giticket, { AddItem, EditItem, Item } from '@giticket/core';
 import { Command, Option, InvalidArgumentError } from 'commander';
 import * as chalk from 'chalk';
 import { log } from 'loglevel';
@@ -58,12 +58,47 @@ function addCommand(): Command {
     });
 }
 
+function editCommand(): Command {
+  return new Command('edit')
+    .argument('<id>', 'item identifier')
+    .addOption(pathOption())
+    .option('-t, --title <title>', "item's title")
+    .option('-d, --description <description>', "item's description")
+    .option('-k, --kind <kind>', "item's kind")
+    .action(async (id, { title, description, kind, path }) => {
+      if (!id) {
+        throw new InvalidArgumentError('id is mandatory');
+      }
+
+      const git = new Giticket(path, fs, http);
+
+      const item: EditItem = {
+        id,
+      };
+
+      setIfDefined('title', title, item);
+      setIfDefined('description', description, item);
+      setIfDefined('kind', kind, item);
+
+      await git.editItem(item);
+    });
+}
+
 export default function handleItemCommands(): Command {
-  return new Command('item').addCommand(listCommand()).addCommand(addCommand());
+  return new Command('item')
+    .addCommand(listCommand())
+    .addCommand(addCommand())
+    .addCommand(editCommand());
 }
 
 function format(item: Item): string {
   return `${chalk.underline(item.id)}\u0009${chalk.italic(item.kind)}\u0009${
     item.title
   }`;
+}
+
+function setIfDefined(property: string, value: string, item: EditItem) {
+  if (value !== undefined) {
+    item[property] = value;
+  }
 }

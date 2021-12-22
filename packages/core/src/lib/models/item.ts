@@ -6,3 +6,4 @@ export default interface Item {
 }
 
 export type AddItem = Omit<Item, 'id'>;
+export type EditItem = Partial<Item> & { id: string };

@@ -7,9 +7,9 @@ import ItemManager from './lib/item-manager';
 import Repository from './lib/repository';
 import { clone, init } from 'isomorphic-git';
 
-import Item, { AddItem } from './lib/models/item';
+import Item, { AddItem, EditItem } from './lib/models/item';
 import NoMoreItemError from './lib/errors/noMoreItemError';
-export { Item, AddItem, NoMoreItemError };
+export { Item, AddItem, EditItem, NoMoreItemError };
 
 export { item } from './lib/query';
 

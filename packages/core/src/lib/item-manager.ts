@@ -2,7 +2,7 @@ import NoMoreItemError from './errors/noMoreItemError';
 import * as git from 'isomorphic-git';
 import { v4 as uuid } from 'uuid';
 import { TextDecoder, TextEncoder } from 'util';
-import Item, { AddItem } from './models/item';
+import Item, { AddItem, EditItem } from './models/item';
 import { generate, parse } from './models/path';
 import { Page } from './models/page';
 import Repository from './repository';
@@ -40,7 +40,7 @@ export default function <TBase extends Gitable>(Base: TBase) {
       return item;
     }
 
-    async editItem(item: Item): Promise<Item> {
+    async editItem(item: EditItem): Promise<Item> {
       const options = { ref: GITICKET_DEFAULT_HEAD };
       const head = await this.resolveRef(options);
 
@@ -49,8 +49,11 @@ export default function <TBase extends Gitable>(Base: TBase) {
       });
 
       const itemOid = await this.findOid(item.id);
+      const oldItem = await this.readBlobItem(itemOid);
+      const editedItem = { ...oldItem, ...item };
+
       const newTree = [
-        await this.createTreeItem(item),
+        await this.createTreeItem(editedItem),
         ...oldTree.filter(({ oid }) => {
           return oid !== itemOid;
         }),
@@ -58,7 +61,7 @@ export default function <TBase extends Gitable>(Base: TBase) {
 
       await this.commitItems({ content: newTree, parent: head });
 
-      return item;
+      return editedItem;
     }
 
     async listItems({
