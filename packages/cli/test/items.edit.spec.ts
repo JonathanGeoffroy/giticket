@@ -160,7 +160,7 @@ describe('item edit', () => {
       title: 'add title',
     });
 
-    expect(
+    await expect(
       cli.parseAsync(
         stringArgv(
           `item edit  this-does-not-exist -C ${git.dir} -t 'edit title' -d 'different description' -k edited`,
@@ -168,9 +168,7 @@ describe('item edit', () => {
           'testing'
         )
       )
-    ).rejects.toEqual(
-      new isogit.Errors.NotFoundError('Could not find this-does-not-exist.')
-    );
+    ).rejects.toEqual(new isogit.Errors.NotFoundError('this-does-not-exist'));
 
     const { results } = await git.listItems({});
     expect(results).toHaveLength(1);
