@@ -17,7 +17,7 @@ As the doc says : `It means that at the core of Git is a simple key-value data s
 This atually means we can store any kind of data, including tickets in the very same repository than your code, but without poluting the later (by creating dedicated [refs](https://git-scm.com/book/en/v2/Git-Internals-The-Refspec)).  
 Then, we're able to reference any code (branch, commit, file, ...) to our [trees](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects).
 
-Futhermore, Git has excellent [https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks](hooks) system, so that we can track every change & actions made by git (including commands and GUI softwares), and augment git's behavior, just like a plugging would do.
+Futhermore, Git has excellent [hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks) system, so that we can track every change & actions made by git (including commands and GUI softwares), and augment git's behavior, just like a plugging would do.
 
 ## Installation
 
