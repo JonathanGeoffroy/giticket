@@ -1,90 +1,71 @@
 # Giticket
 
-This project was generated using [Nx](https://nx.dev).
+Giticket : yet another ticketing / board / issues stuff ... but this time we push all information we need in git repository.  
+This let us take advantage of git :
 
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="450"></p>
+- Tickets are automatically versioned, forked, branched,
+- Tickets automatically follow you code, and actually use your code to discover new tickets, or tickets to close, etc.
+- `--everything-is-local`, meaning everybody can work on tickets in parallel in its own copy, then choose when to push stuff to the team.
 
-🔎 **Smart, Extensible Build Framework**
+> Disclaimer: Giticket is still an experimentation for now ; things are very likely to change until we release v1.0.0
 
-## Adding capabilities to your workspace
+## How it works
 
-Nx supports many plugins which add capabilities for developing different types of applications and different tools.
+Giticket actualy uses one of the most powerful features of git : [Git objects](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects).
+As the doc says : `It means that at the core of Git is a simple key-value data store`.
 
-These capabilities include generating applications, libraries, etc as well as the devtools to test, and build projects as well.
+This atually means we can store any kind of data, including tickets in the very same repository than your code, but without poluting the later (by creating dedicated [refs](https://git-scm.com/book/en/v2/Git-Internals-The-Refspec)).  
+Then, we're able to reference any code (branch, commit, file, ...) to our [trees](https://git-scm.com/book/en/v2/Git-Internals-Git-Objects).
 
-Below are our core plugins:
+Futhermore, Git has excellent [https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks](hooks) system, so that we can track every change & actions made by git (including commands and GUI softwares), and augment git's behavior, just like a plugging would do.
 
-- [React](https://reactjs.org)
-  - `npm install --save-dev @nrwl/react`
-- Web (no framework frontends)
-  - `npm install --save-dev @nrwl/web`
-- [Angular](https://angular.io)
-  - `npm install --save-dev @nrwl/angular`
-- [Nest](https://nestjs.com)
-  - `npm install --save-dev @nrwl/nest`
-- [Express](https://expressjs.com)
-  - `npm install --save-dev @nrwl/express`
-- [Node](https://nodejs.org)
-  - `npm install --save-dev @nrwl/node`
+## Installation
 
-There are also many [community plugins](https://nx.dev/community) you could add.
+> Todo : we plan to provide a simple way to init Giticket in a repository
 
-## Generate an application
+## comand line interface (cli)
 
-Run `nx g @nrwl/react:app my-app` to generate an application.
+Giticket comes with a simple cli in order to use tickets.
+As Giticket relies on [commanderjs](https://github.com/tj/commander.js#readme), we can use `-h` switch to display usage command.
 
-> You can use any of the plugins above to generate applications as well.
+### item list
 
-When using Nx, you can create multiple applications and libraries in the same workspace.
+```
+Usage: item list [options]
 
-## Generate a library
+Options:
+  -C, --path <path>  repository path ; current directory if ommited (default: "./")
+  -s --size <size>   Size of the pagination
+  -h, --help         display help for command
+```
 
-Run `nx g @nrwl/react:lib my-lib` to generate a library.
+### item add
 
-> You can also use any of the plugins above to generate libraries as well.
+```
+Usage: main item add [options] <title>
 
-Libraries are shareable across libraries and applications. They can be imported from `@giticket/mylib`.
+Arguments:
+  title                            title of the new item
 
-## Development server
+Options:
+  -C, --path <path>                repository path ; current directory if ommited (default: "./")
+  -d, --description <description>  description of the new item ; empty if ommited (default: "")
+  -k, --kind <kind>                kind of the new item ; `issue` if ommited (default: "issue")
+  -h, --help                       display help for command
+```
 
-Run `nx serve my-app` for a dev server. Navigate to http://localhost:4200/. The app will automatically reload if you change any of the source files.
+### item edit
 
-## Code scaffolding
+```
+Usage: main item edit [options] <id>
 
-Run `nx g @nrwl/react:component my-component --project=my-app` to generate a new component.
+Arguments:
+  id                               item identifier
 
-## Build
-
-Run `nx build my-app` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `nx test my-app` to execute the unit tests via [Jest](https://jestjs.io).
-
-Run `nx affected:test` to execute the unit tests affected by a change.
-
-## Running end-to-end tests
-
-Run `ng e2e my-app` to execute the end-to-end tests via [Cypress](https://www.cypress.io).
-
-Run `nx affected:e2e` to execute the end-to-end tests affected by a change.
-
-## Understand your workspace
-
-Run `nx dep-graph` to see a diagram of the dependencies of your projects.
-
-## Further help
-
-Visit the [Nx Documentation](https://nx.dev) to learn more.
-
-## ☁ Nx Cloud
-
-### Distributed Computation Caching & Distributed Task Execution
-
-<p style="text-align: center;"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-cloud-card.png"></p>
-
-Nx Cloud pairs with Nx in order to enable you to build and test code more rapidly, by up to 10 times. Even teams that are new to Nx can connect to Nx Cloud and start saving time instantly.
-
-Teams using Nx gain the advantage of building full-stack applications with their preferred framework alongside Nx’s advanced code generation and project dependency graph, plus a unified experience for both frontend and backend developers.
-
-Visit [Nx Cloud](https://nx.app/) to learn more.
+Options:
+  -C, --path <path>                repository path ; current directory if ommited (default: "./")
+  -t, --title <title>              item's title
+  -d, --description <description>  item's description
+  -k, --kind <kind>                item's kind
+  -h, --help                       display help for command
+```

@@ -11,6 +11,9 @@ export interface Query<T> {
   not: Query<T>;
 }
 
+/**
+ * Query matchers to filter items
+ */
 export class ItemQuery implements Query<Item> {
   constructor(private readonly property: keyof Item) {}
   not = new NotQuery<Item>(this);

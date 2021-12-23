@@ -13,6 +13,13 @@ export { Item, AddItem, EditItem, NoMoreItemError };
 
 export { item } from './lib/query';
 
+/**
+ * Main exported class of @giticket/core
+ * Giticket is able to initialize or clone a repository.
+ * It handles mixins about all Repository's features
+ *  * Commits,
+ *  * Items
+ */
 export default class Giticket extends CommitManager(ItemManager(Repository)) {
   static async clone(url: string, baseDirectory: string): Promise<Repository> {
     const dir = path.join(baseDirectory, url.split('/').slice(-1)[0]);

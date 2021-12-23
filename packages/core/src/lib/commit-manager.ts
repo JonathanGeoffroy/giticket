@@ -8,8 +8,23 @@ type Gitable = Constructor<Repository>;
 
 export type CommitPage = Page<git.ReadCommitResult>;
 
+/**
+ * Handles commits behavior from a specific git repository
+ * @param Base mixins for Repository
+ * @returns a Mixins handling commits behavior
+ */
 export default function <TBase extends Gitable>(Base: TBase) {
   return class extends Base {
+    /**
+     * List commits.
+     * By default, this will returns all commits of the current ref (HEAD).
+     * Default behavior can be changed by providing `ref` and `depth` params
+     * @param params {
+     * refs: the refs where to start listing ; uses the current ref if ommited
+     * depth: number of commits maximum to returns ; returns all commits if ommited
+     * }
+     * @returns
+     */
     async listCommits(
       params: {
         ref?: string;

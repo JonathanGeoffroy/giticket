@@ -15,8 +15,18 @@ type Gitable = Constructor<Repository>;
 
 export type ItemPage = Page<Item>;
 
+/**
+ * Handles items behavior from a specific git repository
+ * @param Base mixins for Repository
+ * @returns a Mixins handling items behavior
+ */
 export default function <TBase extends Gitable>(Base: TBase) {
   return class extends Base {
+    /**
+     * Adds a new item in the default giticket branch
+     * @param itemToAdd
+     * @returns added item (including its id)
+     */
     async addItem(itemToAdd: AddItem): Promise<Item> {
       const item: Item = {
         id: uuid(),
@@ -40,6 +50,17 @@ export default function <TBase extends Gitable>(Base: TBase) {
       return item;
     }
 
+    /**
+     * Edits (patches) an existing item, found by its id.
+     * Every `item`'s fields are optional. If any field is unset, old field value will remain as is.
+     * Be careful that providing null or undefined is different from not providing a value at all:
+     *   * The former will change value to null/undefined,
+     *   * the latter will not change the old value
+     *
+     * @param item the item to edit
+     * @returns edited item
+     * @throws isomorphic-git.Errors.NotFoundError
+     */
     async editItem(item: EditItem): Promise<Item> {
       const options = { ref: GITICKET_DEFAULT_HEAD };
       const head = await this.resolveRef(options);
@@ -64,6 +85,16 @@ export default function <TBase extends Gitable>(Base: TBase) {
       return editedItem;
     }
 
+    /**
+     * List items.
+     * By default, this will returns all items of the current ref (default giticket ref).
+     * Default behavior can be changed by providing `ref` and `depth` params
+     * @param params {
+     * refs: the refs where to start listing ; uses the current ref if ommited
+     * depth: number of commits maximum to returns ; returns all commits if ommited
+     * }
+     * @returns
+     */
     async listItems({
       ref,
       limit,
@@ -115,6 +146,12 @@ export default function <TBase extends Gitable>(Base: TBase) {
       }
     }
 
+    /**
+     * Filters items by query
+     *
+     * @param query The query to filter items
+     * @returns All items matching the matcher
+     */
     async searchItems(query: Matcher<Item>): Promise<Item[]> {
       const items = await this.listItems({});
       return items.results.filter(query);
